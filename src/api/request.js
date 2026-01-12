@@ -6,6 +6,7 @@ import { useStore } from '@/stores/userStore.js';
 const request = axios.create({
 	// baseurl地址
 	baseURL: "http://127.0.0.1:8000",
+	// baseURL:"http://9706ih4dm038.vicp.fun",
 	timeout: 10000,
 	// 全局请求头
 	headers: {

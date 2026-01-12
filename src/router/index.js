@@ -58,6 +58,24 @@ const router = createRouter({
             }
         },
         {
+          path: '/cases/addCase',
+          name: 'addCase',
+          component: () => import('../views/TestCase/AddCase.vue'),
+          meta:{ 
+                name: '添加用例', 
+                icon_path: new URL('@/assets/icon2/ceshijihua.png', import.meta.url).href
+            }
+        },
+        {
+          path: '/cases/editCase/:case_id',
+          name: 'editCase',
+          component: () => import('../views/TestCase/EditCase.vue'),
+          meta:{ 
+                name: '编辑用例', 
+                icon_path: new URL('@/assets/icon2/yemian.png', import.meta.url).href
+            }
+        },
+        {
           path: '/suits/suitList',
           name: 'suitList',
           component: () => import('../views/TestSuite/SuiteList.vue'),

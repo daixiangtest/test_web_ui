@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "ace-builds": "^1.43.5",
     "axios": "^1.13.2",
     "element-plus": "^2.11.9",
     "nprogress": "^0.2.0",
@@ -21,7 +22,9 @@
     "sass": "^1.94.2",
     "screenfull": "^6.0.2",
     "vue": "^3.5.25",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue3-ace-editor": "^2.2.4",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.2",

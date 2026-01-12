@@ -1,7 +1,7 @@
 <template>
     <PageCard>
         <template #title>
-            <el-button type="primary" icon="plus" size="small" >添加环境</el-button>
+            <el-button type="primary" icon="plus" size="small" @click="createEnv">添加环境</el-button>
         </template>
         <template #main>
             <el-table :data="envList" border style="width: 100%">
@@ -26,7 +26,7 @@
                     </el-table-column>
                     <el-table-column label="操作">
                         <template #default="scope">
-                            <el-button type="success" icon="Edit" plain size="small" >编辑</el-button>
+                            <el-button type="success" icon="Edit" plain size="small" @click="editEnv(scope.row)">编辑</el-button>
                             <el-button type="danger" icon="Delete" plain size="small" @click="deleteEnv(scope.row)">删除</el-button>
                         </template>
                     </el-table-column>
@@ -48,6 +48,32 @@
                 />
         </template>
     </PageCard>
+    <!-- 编辑与创建模块对话框 -->
+     <el-dialog v-model="dialogFormVisible" :title="title" width="500">
+      <el-form :model="envForm">
+        <el-form-item label="模块名称" :label-width="formLabelWidth">
+          <el-input v-model="envForm.name" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="Host地址" :label-width="formLabelWidth">
+          <el-input v-model="envForm.host" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="全局变量" :label-width="formLabelWidth">
+          <CodeEdit v-model="envForm.global_vars" lang="json" :height="'200px'" />
+          <!-- <el-input v-model="envForm.global_vars" type="textarea" autocomplete="off" /> -->
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">Cancel</el-button>
+          <el-button v-if="title === '编辑环境'" type="primary" @click="updateEnvApi">
+            Confirm
+          </el-button>
+          <el-button v-else type="primary" @click="createEnvApi">
+            Confirm
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -56,6 +82,8 @@ import papi from '@/api/modules/projectApi.js';
 import { projectStore } from '@/stores/projectStore';
 import { ref, reactive ,watch} from 'vue';
 import { ElMessage ,ElMessageBox } from 'element-plus'
+import CodeEdit from '@/components/CodeEdit.vue';
+
 const pstore = projectStore();
 const envList = ref([]);
 const configPage=reactive({
@@ -63,7 +91,34 @@ const configPage=reactive({
     size: 10,
     total: 0
 });
+// 编辑与创建环境对话框数据
+const dialogFormVisible = ref(false);
+const envForm = reactive({
+  project_id: pstore.projectInfo.id,
+  name: '',
+  host: '',
+  global_vars: "",
+});
+const title=ref('');
 
+// 创建环境
+const createEnv = () => {
+  title.value = '创建环境';
+  envForm.name = '';
+  envForm.host = '';
+  envForm.global_vars = '';
+  dialogFormVisible.value = true;
+};
+const envId=ref(null);
+// 编辑环境
+const editEnv = (row) => {
+  title.value = '编辑环境';
+  envForm.name = row.name;
+  envForm.host = row.host;
+  envForm.global_vars = row.global_vars;
+  envId.value = row.id;
+  dialogFormVisible.value = true;
+};
 // 格式化为完整的 JSON 字符串（若是对象则 stringify，若是字符串则返回原字符串）
 const formatGlobalVarsFull = (v) => {
   if (v === null || v === undefined || v === '') return '-';
@@ -122,7 +177,45 @@ watch(pageSizes, (newSizes) => {
 
 getEnvList();
 
+// 创建环境 API 调用
+const createEnvApi = async() => {
+    const res = await papi.addEnvironment({
+        project_id: pstore.projectInfo.id,
+        name: envForm.name,
+        host: envForm.host,
+        global_vars: JSON.parse(envForm.global_vars)
+    });
+    if (res.status === 200) {
+        getEnvList();
+        dialogFormVisible.value = false;
+        ElMessage({
+            message: '环境创建成功',
+            type: 'success',
+        })
+    } else {
+        ElMessage.error('环境创建失败');
+    }
+};
 
+// 更新环境 API 调用
+const updateEnvApi = async() => {
+    const res = await papi.updateEnvironment(envId.value,{
+        project_id: pstore.projectInfo.id,
+        name: envForm.name,
+        host: envForm.host,
+        global_vars: JSON.parse(envForm.global_vars)
+    });
+    if (res.status === 200) {
+        getEnvList();
+        dialogFormVisible.value = false;
+        ElMessage({
+            message: '环境更新成功',
+            type: 'success',
+        })
+    } else {
+        ElMessage.error('环境更新失败');
+    }
+};
 // 删除环境
 const deleteEnv = async(row) => {
      ElMessageBox.confirm(
